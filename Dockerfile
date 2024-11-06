@@ -2,12 +2,16 @@
 FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /app
 
-# Copy csproj and restore as distinct layers
+# Copy solution and project files, including test projects
 COPY *.sln .
 COPY Fruityvice/*.csproj ./Fruityvice/
+COPY Fruityvice.Tests/*.csproj ./Fruityvice.Tests/
+COPY Fruityvice.Tests.Integration/*.csproj ./Fruityvice.Tests.Integration/
+
+# Restore dependencies
 RUN dotnet restore
 
-# Copy the rest of the application files and build the app
+# Copy the entire source code and publish the application
 COPY . .
 RUN dotnet publish -c Release -o out
 
