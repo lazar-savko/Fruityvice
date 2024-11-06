@@ -1,9 +1,7 @@
 ﻿using Fruityvice.Models;
 using Microsoft.Extensions.Logging;
 using System;
-using System.IO;
-using System.Net.Http;
-using System.Text.Json;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Fruityvice.Services
@@ -16,54 +14,74 @@ namespace Fruityvice.Services
 
     public class FruityviceService : IFruitService
     {
-        private readonly HttpClient _httpClient;
-        private readonly string _baseUrl = "https://www.fruityvice.com/api/fruit";
         private readonly ILogger<FruityviceService> _logger;
-        public FruityviceService(HttpClient httpClient, ILogger<FruityviceService> logger)
 
+        // Static list of fruits with detailed information
+        private static readonly Fruit[] Fruits = new[]
         {
-            _httpClient = httpClient;
+            new Fruit
+            {
+                Id = 1,
+                Name = "Apple",
+                Family = "Rosaceae",
+                Order = "Rosales",
+                Genus = "Malus",
+                Nutritions = new Nutritions { Calories = 52, Fat = 0.2f, Sugar = 10.39f, Carbohydrates = 13.81f, Protein = 0.26f }
+            },
+            new Fruit
+            {
+                Id = 2,
+                Name = "Banana",
+                Family = "Musaceae",
+                Order = "Zingiberales",
+                Genus = "Musa",
+                Nutritions = new Nutritions { Calories = 96, Fat = 0.3f, Sugar = 12.23f, Carbohydrates = 22.84f, Protein = 1.3f }
+            },
+            new Fruit
+            {
+                Id = 3,
+                Name = "Strawberry",
+                Family = "Rosaceae",
+                Order = "Rosales",
+                Genus = "Fragaria",
+                Nutritions = new Nutritions { Calories = 32, Fat = 0.3f, Sugar = 4.89f, Carbohydrates = 7.68f, Protein = 0.67f }
+            },
+            new Fruit
+            {
+                Id = 4,
+                Name = "Persimmon",
+                Family = "Ebenaceae",
+                Order = "Rosales",
+                Genus = "Diospyros",
+                Nutritions = new Nutritions { Calories = 81, Fat = 0.0f, Sugar = 18.0f, Carbohydrates = 18.0f, Protein = 0.0f }
+            },
+            new Fruit
+            {
+                Id = 5,
+                Name = "Papaya",
+                Family = "Caricaceae",
+                Order = "Caricales",
+                Genus = "Carica",
+                Nutritions = new Nutritions { Calories = 43, Fat = 0.3f, Sugar = 5.9f, Carbohydrates = 10.82f, Protein = 0.5f }
+            },
+            // Add more fruits as needed...
+        };
+
+        public FruityviceService(ILogger<FruityviceService> logger)
+        {
             _logger = logger;
         }
 
-        public async Task<Fruit[]> GetAllFruits()
+        public Task<Fruit[]> GetAllFruits()
         {
-            try
-            {
-                HttpResponseMessage response = await _httpClient.GetAsync($"{_baseUrl}/all");
-                if (response.IsSuccessStatusCode)
-                {
-                    Stream contentStream = await response.Content.ReadAsStreamAsync();
-                    Fruit[] fruits = await JsonSerializer.DeserializeAsync<Fruit[]>(contentStream);
-                    return fruits;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error retrieving all fruits");
-            }
-
-            return new Fruit[0];
+            // Return the in-memory data
+            return Task.FromResult(Fruits);
         }
 
         public async Task<Fruit[]> GetFruitsByFamily(string fruitFamily)
         {
-            try
-            {
-                HttpResponseMessage response = await _httpClient.GetAsync($"{_baseUrl}/family/{fruitFamily}");
-                if (response.IsSuccessStatusCode)
-                {
-                    Stream contentStream = await response.Content.ReadAsStreamAsync();
-                    Fruit[] fruits = await JsonSerializer.DeserializeAsync<Fruit[]>(contentStream);
-                    return fruits;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Error retrieving fruits by family: {fruitFamily}");
-            }
-
-            return new Fruit[0];
+            var fruitsByFamily = Fruits.Where(f => f.Family.Equals(fruitFamily, StringComparison.OrdinalIgnoreCase)).ToArray();
+            return await Task.FromResult(fruitsByFamily);
         }
     }
 }
