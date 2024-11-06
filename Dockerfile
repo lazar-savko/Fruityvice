@@ -15,8 +15,8 @@ RUN dotnet restore
 COPY . .
 RUN dotnet publish -c Release -o out
 
-# Use the runtime image to run the app
-FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS runtime
+# Use the .NET Core 3.1 runtime to run the app
+FROM mcr.microsoft.com/dotnet/aspnet:3.1 AS runtime
 WORKDIR /app
 COPY --from=build /app/out ./
 ENTRYPOINT ["dotnet", "Fruityvice.dll"]
